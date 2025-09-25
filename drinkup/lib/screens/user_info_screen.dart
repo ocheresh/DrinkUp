@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wheel_picker/wheel_picker.dart';
 
 class UserInfoScreen extends StatefulWidget {
   const UserInfoScreen({super.key});
@@ -12,6 +13,10 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
   final _formKey = GlobalKey<FormState>();
   String _gender = "male"; // за замовчуванням чоловік
   double? _weight;
+
+  final List<int> weights = List.generate(200, (i) => i + 30);
+
+  int selectedIndex = 0; // стан вибраного елемента
 
   Future<void> _saveData() async {
     if (_formKey.currentState!.validate()) {
@@ -71,34 +76,79 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
-                // Права частина: форма для ваги
-                Expanded(
-                  flex: 1,
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TextFormField(
-                          decoration: const InputDecoration(
-                            labelText: "Вага (кг)",
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Колесо з числами
+                    SizedBox(
+                      height: 210, // висота колеса
+                      width: 70, // ширина колеса
+                      child: ListWheelScrollView.useDelegate(
+                        itemExtent: 70,
+                        physics: const FixedExtentScrollPhysics(),
+                        onSelectedItemChanged: (index) {
+                          setState(() {
+                            selectedIndex = index;
+                          });
+                        },
+                        childDelegate: ListWheelChildBuilderDelegate(
+                          builder: (context, index) => Center(
+                            child: Text(
+                              weights[index].toString(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 45,
+                                color: Colors.black,
+                              ),
+                            ),
                           ),
-                          keyboardType: TextInputType.number,
-                          validator: (val) {
-                            if (val == null || val.isEmpty) return "Введи вагу";
-                            final number = double.tryParse(val);
-                            if (number == null || number <= 0)
-                              return "Некоректна вага";
-                            return null;
-                          },
-                          onSaved: (val) => _weight = double.parse(val!),
+                          childCount: weights.length,
                         ),
-                        const SizedBox(height: 24),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    // Статичний текст "кг"
+                    Padding(
+                      padding: const EdgeInsets.only(right: 15.0),
+                      child: const Text(
+                        "кг",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 30,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+
+                // Права частина: форма для ваги
+                // Expanded(
+                //   flex: 1,
+                //   child: Form(
+                //     key: _formKey,
+                //     child: Column(
+                //       mainAxisAlignment: MainAxisAlignment.center,
+                //       children: [
+                //         TextFormField(
+                //           decoration: const InputDecoration(
+                //             labelText: "Вага (кг)",
+                //           ),
+                //           keyboardType: TextInputType.number,
+                //           validator: (val) {
+                //             if (val == null || val.isEmpty) return "Введи вагу";
+                //             final number = double.tryParse(val);
+                //             if (number == null || number <= 0)
+                //               return "Некоректна вага";
+                //             return null;
+                //           },
+                //           onSaved: (val) => _weight = double.parse(val!),
+                //         ),
+                //         const SizedBox(height: 24),
+                //       ],
+                //     ),
+                //   ),
+                // ),
               ],
             ),
             ElevatedButton(
